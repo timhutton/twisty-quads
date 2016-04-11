@@ -41,7 +41,7 @@ function makeNextPolygon( poly, prop ) {
         var a = poly[ i ];
         var b = poly[ (i+1) % poly.length ];
         var d = dist( a, b );
-        if( d < 2 )
+        if( d < 1 )
             too_tiny = true;
         new_poly[i] = lerp( a, b, prop );
     }
@@ -74,7 +74,7 @@ function draw() {
     ctx.lineWidth = 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    if( true ) {
+    if( Math.random()<0.33 ) {
         // a distorted square lattice
         var initial_side = 150;
         var nx = Math.floor( canvas.width / initial_side ) + 1;
@@ -92,13 +92,17 @@ function draw() {
     }
     else {
         // voronoi diagram of random points
-        var vertices = d3.range(10).map(function(d) {
+        var vertices = d3.range(20).map(function(d) {
           return [Math.random() * canvas.width, Math.random() * canvas.height];
         });
 
-        var voronoi = d3.geom.voronoi().clipExtent([[0, 0], [canvas.width, canvas.height]]);
-        
-        var vpolys = voronoi(vertices);
+        if( Math.random()<0.5 ) {
+            var voronoi = d3.geom.voronoi().clipExtent([[0, 0], [canvas.width, canvas.height]]);
+            vpolys = voronoi(vertices);
+        }
+        else {
+            vpolys = d3.geom.delaunay(vertices);
+        }
         polys = [];
         for( var i = 0; i < vpolys.length; i++ )
         {
