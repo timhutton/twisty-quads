@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script>
+
+function p2(x,y) { return { x:x, y:y }; }
+function lerp(a,b,u) { return p2( a.x*(1-u) + b.x*u, a.y*(1-u) + b.y*u ); }
+function dist(a,b) { return Math.hypot( a.x-b.x, a.y-b.y ); }
+
+function init() {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+    canvas_rect = { x:0, y:0, width:canvas.width, height:canvas.height };
+    
+    draw();
+}
+
+function drawPolygon( poly ) {
+    ctx.moveTo( poly[0].x, poly[0].y );
+    for( var i = 0; i < poly.length; i++ )
+        ctx.lineTo( poly[i].x, poly[i].y );
+    ctx.lineTo( poly[0].x, poly[0].y );
+}
+
+function drawCurvedEdgeSegments( poly, prop ) {
+    for( var i = 0; i < poly.length; i++ ) {
+        var a = poly[i];
+        var b = poly[(i+1)%poly.length];
+        var c = lerp( a, b, prop );
+        ctx.moveTo(a.x,a.y);
+        ctx.lineTo(c.x,c.y);
+    }
+}
+
+function makeNextPolygon( poly, prop ) {
+    var new_poly = poly.slice();
+    var too_tiny = false;
+    for( var i = 0; i < poly.length; i++ ) {
+        var a = poly[ i ];
+        var b = poly[ (i+1) % poly.length ];
+        var d = dist( a, b );
+        if( d < 2 )
+            too_tiny = true;
+        new_poly[i] = lerp( a, b, prop );
+    }
+    return { too_tiny:too_tiny, poly:new_poly };
+}
+
+function drawSpirallyPolygonCurves( poly, prop ) {
+    drawCurvedEdgeSegments(poly,prop);
+    var ret = makeNextPolygon( poly, prop );
+    while( !ret.too_tiny ) {
+        poly = ret.poly;
+        drawCurvedEdgeSegments(poly,prop);
+        ret = makeNextPolygon( poly, prop );
+    }
+}
+
+function drawSpirallyPolygon( poly, prop ) {
+    drawPolygon(poly);
+    var ret = makeNextPolygon( poly, prop );
+    while( !ret.too_tiny ) {
+        poly = ret.poly;
+        drawPolygon( poly );
+        ret = makeNextPolygon( poly, prop );
+    }
+}
+
+function draw() {
+
+    // clear the area
+    ctx.lineWidth = 1;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if( true ) {
+        // a distorted square lattice
+        var initial_side = 150;
+        var nx = Math.floor( canvas.width / initial_side ) + 1;
+        var ny = Math.floor( canvas.height / initial_side ) + 1;
+        var r = 40;
+        var pts = [];
+        var polys = [];
+        for( var ix = 0; ix < nx; ix++ ) {
+            for( var iy = 0; iy < ny; iy++ ) {
+                pts[ iy*nx + ix ] = p2( ix * initial_side + Math.random()*r*2-r, iy * initial_side + Math.random()*r*2-r );
+                if( ix > 0 && iy > 0 )
+                    polys[ polys.length ] = [ pts[ (iy-1)*nx + ix-1 ], pts[ (iy-1)*nx + ix ], pts[ (iy)*nx + ix ], pts[ iy*nx + ix-1 ] ];
+            }
+        }
+    }
+    else {
+        // voronoi diagram of random points
+        var vertices = d3.range(10).map(function(d) {
+          return [Math.random() * canvas.width, Math.random() * canvas.height];
+        });
+
+        var voronoi = d3.geom.voronoi().clipExtent([[0, 0], [canvas.width, canvas.height]]);
+        
+        var vpolys = voronoi(vertices);
+        polys = [];
+        for( var i = 0; i < vpolys.length; i++ )
+        {
+            polys[i] = [];
+            for( var j = 0; j < vpolys[i].length; j++ )
+                polys[i][j] = p2( vpolys[i][j][0], vpolys[i][j][1] );
+        }
+    }
+    
+    // draw spirally polygons
+    var prop = 0.1;
+    ctx.strokeStyle = "rgba(0,0,0,0.3)";
+    ctx.beginPath();
+    for( var i = 0; i < polys.length; i++ )
+        drawSpirallyPolygon( polys[i], prop );
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(0,0,0,0.9)";
+    ctx.beginPath();
+    for( var i = 0; i < polys.length; i++ )
+        drawSpirallyPolygonCurves( polys[i], prop );
+    ctx.stroke();
+}
+
+window.onload = init;
+</script>
+
+<noscript>
+<p>For full functionality of this site it is necessary to enable JavaScript.
+Here are the <a href="http://www.enable-javascript.com/" target="_blank">
+instructions how to enable JavaScript in your web browser</a>.
+</p></noscript>
+
+</head>
+
+<body>
+
+<div style="float:left"><p><canvas id="canvas" width="700" height="600">(Canvas drawing not supported by your browser.)</canvas></p></div>
+
+</html>
+
