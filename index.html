@@ -49,8 +49,8 @@ function makeNextPolygon( poly, prop ) {
 }
 
 function drawSpirallyPolygonCurves( poly, prop ) {
-    drawCurvedEdgeSegments(poly,prop);
-    var ret = makeNextPolygon( poly, prop );
+    drawCurvedEdgeSegments(poly,prop/2);
+    var ret = makeNextPolygon( poly, prop/2 );
     while( !ret.too_tiny ) {
         poly = ret.poly;
         drawCurvedEdgeSegments(poly,prop);
@@ -59,8 +59,7 @@ function drawSpirallyPolygonCurves( poly, prop ) {
 }
 
 function drawSpirallyPolygon( poly, prop ) {
-    drawPolygon(poly);
-    var ret = makeNextPolygon( poly, prop );
+    var ret = makeNextPolygon( poly, prop/2 );
     while( !ret.too_tiny ) {
         poly = ret.poly;
         drawPolygon( poly );
