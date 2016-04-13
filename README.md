@@ -1,5 +1,5 @@
 # twisty-quads
-Playing around with an optical illusion doodle that I first saw in a video [here](https://youtu.be/vln7rc5WYWM?t=13m5s).
+Playing around with an optical illusion doodle that I first saw in a video [here](https://youtu.be/vln7rc5WYWM?t=13m5s) via my aunt [Angela Meister, on Facebook](https://www.facebook.com/meisterang/posts/10208098651476817). 
 
 [Live demo here:](http://timhutton.github.io/twisty-quads/)
 
